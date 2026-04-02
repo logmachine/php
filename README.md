@@ -212,22 +212,24 @@ If room is not provided, LogMachine will automatically generate one:
 
 ```
 logmachine-php/
+├── LICENSE
+├── README.md
+├── compos_install.sh
 ├── composer.json
-├── src/
-│   ├── LogMachine.php
-|	├── ColorfulLogger.php
-│   └── Transports/
-│       ├── HttpTransport.php
-│       └── WebSocketTransport.php (disabled by default)
-|		Traits/
-│       ├── ColorfulLoggerTrait.php
-|		Formatters
-|		└── ColoredLineFormatter.php
+├── src
+│   ├── ColorLogger.php
+│   ├── Formatters
+│   │   ├── ColoredLineFormatter.php
+│   │   └── PlainLineFormatter.php
+│   ├── LogMachine.php
+│   ├── Traits
+│   │   └── ColorfulLoggerTrait.php
+│   └── Transports
+│       ├── HttpTransport.php
+│       └── WebSocketTransport.php
 ├── public/
 │   └── index.php (demo/test endpoint)
 ├── config/
 │   └── logmachine.php
-├── logs/
-│   └── logmachine.log
-└── README.md
+└── test
 ```
