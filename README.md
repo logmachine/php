@@ -21,9 +21,13 @@ LogMachine solves this with:
 
 ```css
 [2025-08-08 14:32:00 UTC] [DEBUG] Debug message
+➢ Log provided by: username@room
 [2025-08-08 14:32:01 UTC] [INFO]  User logged in  {"user":"jdoe"}
+➢ Log provided by: username@room
 [2025-08-08 14:32:02 UTC] [WARNING] API rate limit approaching
+➢ Log provided by: username@room
 [2025-08-08 14:32:03 UTC] [ERROR]  	Database connection failed  {"host":"localhost"}
+➢ Log provided by: username@room
 ```
 
 ## Compatibility
