@@ -36,6 +36,14 @@ Install via Composer:
 
 ```bash
 composer require bufferpunk/logmachine
+
+or
+
+composer require bufferpunk/logmachine dev-main
+
+or
+
+composer require bufferpunk/logmachine dev-main --ignore-platform-req=ext-mbstring
 ```
 
 <br>
