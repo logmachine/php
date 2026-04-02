@@ -50,7 +50,7 @@ composer require bufferpunk/logmachine dev-main --ignore-platform-req=ext-mbstri
 
 <details>
 <summary>
-: Additional steps (Optional)
+: Additional steps (Important)
 </summary>
 <br>
 
