@@ -26,6 +26,7 @@
     },
     "minimum-stability": "stable",
     "require": {
+        "php": ">=8.3.6"
         "monolog/monolog": "^3.0",
         "guzzlehttp/guzzle": "^7.0",
         "elephantio/elephant.io": "^5.3"
