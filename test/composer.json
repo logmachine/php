@@ -1,0 +1,21 @@
+{
+  "name": "test/logmachine-test",
+  "description": "Test project for Bufferpunk LogMachine PHP package",
+  "type": "project",
+  "require": {
+    "bufferpunk/logmachine": "*"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../logmachine-php"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Test\\": "src/"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+    "name": "bufferpunk/logmachine",
+    "version": "1.1.0",
+    "description": "Logmachine is a collaborative and visually elegant logging tool designed to make logging smarter and more efficient for distributed development teams. It offers a fully pluggable architecture that supports features like color-coded output for better readability, automatic JSON parsing, structured log forwarding via HTTP or Socket.IO, and centralized log management. Whether you're debugging locally or working across services, logmachine brings clarity and flexibility to your logging workflow.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Bufferpunk\\Logmachine\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "BufferPunk",
+            "email": "mugabo@bufferpunk.com",
+            "homepage": "https://logmachine.bufferpunk.com/"
+        },
+        {
+            "name": "rezzcode",
+            "email": "rezzcode.me@gmail.com",
+            "homepage": "https://github.com/the1Riddle"
+        }
+    ],
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "monolog/monolog": "^3.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "elephantio/elephant.io": "^5.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12"
+    }
+}
