@@ -5,3 +5,4 @@
 *versions*
 node_modules
 rust/target
+/vendor/
