@@ -84,9 +84,6 @@ class LogMachine
                  * room name lol :P
                  */
                 $centralCfg['room'] = strtolower($user . '_' . $module);
-
-                // Console log (debug notice for devs)
-                //echo "[LogMachine] No room name provided. Auto-generated: {$centralCfg['room']}\n";
             }
 
             // Push HTTP transport handler
