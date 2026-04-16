@@ -78,10 +78,12 @@ class LogMachine
 
             // If no room name is provided, auto-generate one
             if (empty($centralCfg['room'])) {
-                $centralCfg['room'] = strtolower($user . '_' . $module . rand(100, 999));
-
-                // Console log (debug notice for devs)
-                echo "[LogMachine] No room name provided. Auto-generated: {$centralCfg['room']}\n";
+                /**
+                 * this might currently cause a bug, im asumming user names are unique
+                 * if at all there is a future error, just don't be lazy and setup the
+                 * room name lol :P
+                 */
+                $centralCfg['room'] = strtolower($user . '_' . $module);
             }
 
             // Push HTTP transport handler
