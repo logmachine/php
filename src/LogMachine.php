@@ -22,6 +22,10 @@ class LogMachine
         $terminalOutput = "%extra.datetime_colored%%extra.level_colored% %message%\n" .
                           "➢ Log provided by: %extra.user%@%extra.module%\n";
 
+        /** this is how all logmachine outputs look */
+        $loggerOutput = "(%extra.user% @ %extra.module%) 🤌 CL Timing: [ %extra.datetime_colored% ]\n" .
+                        "[%extra.level_colored%] %message%\n🏁\n";
+
         $terminalFormatter = new ColoredLineFormatter(
             $terminalOutput,
             "Y-m-d H:i:s T",
@@ -33,12 +37,25 @@ class LogMachine
         $plainOutput = "%extra.datetime_colored%%extra.level_colored% %message%\n" .
                        "> Log provided by: %extra.user%@%extra.module%\n";
 
+        if (!empty($config['central']['default_format']) && $config['central']['default_format'] === true) {
+            $plainOutput = "(%extra.user% @ %extra.module%) CL Timing: [ %extra.datetime_colored% ]\n" .
+                           "[%extra.level_colored%] %message%\n";
+        }
+
         $plainFormatter = new PlainLineFormatter(
             $plainOutput,
             "Y-m-d H:i:s T",
             true,
             true
         );
+        if (!empty($config['central']['default_format']) && $config['central']['default_format'] === true) {
+            $plainFormatter = new PlainLineFormatter(
+                $loggerOutput,
+                "Y-m-d H:i:s T",
+                true,
+                true
+            );
+        }
 
         // === Stream to stdout
         $stdout = new StreamHandler('php://stdout', $config['level'] ?? ColorLogger::DEBUG);
