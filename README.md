@@ -113,7 +113,8 @@ return [
     */
     'central' => [
         'http_enabled'    => false,    // can edit: disable by default
-        'url'             => 'https://logmachine.bufferpunk.com', // default link
+        'url'             => 'https://logmachine.bufferpunk.com', // default 
+        'default_format'  => true, // you can change this to false
         'room'            => null,    // can edit: I preffer you just add a name
         //'user' => 'Test-user', // can edit: change to your user name (optional but a plus)
         //'module' => 'logmachine-php', // can edit: your module (optional but a plus)
