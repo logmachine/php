@@ -15,6 +15,10 @@ return [
     'central' => [
         /** The URL is the Law **/
         'url' => 'https://logmachine.bufferpunk.com', /** DONT EVEN THINK OF TOUCHING ME :P **/
+        /** The following is the default format for all logmachine 
+         *  If you want a diferent format for your logs, you can set it to false.
+        **/
+        'default_format' => true,
 
         /** HTTP transport **/
         'http_enabled' => false, // set to true to send logs via HTTP POST
