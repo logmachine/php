@@ -22,12 +22,25 @@ class LogMachine
         $terminalOutput = "%extra.datetime_colored%%extra.level_colored% %message%\n" .
                           "➢ Log provided by: %extra.user%@%extra.module%\n";
 
-        $terminalFormatter = new ColoredLineFormatter(
-            $terminalOutput,
-            "Y-m-d H:i:s T",
-            true,
-            true
-        );
+        /** this is how all logmachine outputs look */
+        $loggerOutput = "(%extra.user% @ %extra.module%) 🤌 CL Timing: %extra.datetime_colored%\n" .
+                        "%extra.level_colored% %message%\n 🏁\n";
+
+        if (!empty($config['central']['default_format']) && $config['central']['default_format'] === true) {
+            $terminalFormatter = new ColoredLineFormatter(
+                $loggerOutput,
+                "Y-m-d H:i:s T",
+                true,
+                true
+            );
+        } else {
+            $terminalFormatter = new ColoredLineFormatter(
+                $terminalOutput,
+                "Y-m-d H:i:s T",
+                true,
+                true
+            );
+        }
 
         // === File (plain) formatter  – same layout, no ANSI / no emoji
         $plainOutput = "%extra.datetime_colored%%extra.level_colored% %message%\n" .
