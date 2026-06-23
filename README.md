@@ -112,15 +112,25 @@ return [
     | - "verify_ssl": Whether to validate SSL certificates
     */
     'central' => [
-        'http_enabled'    => false,    // can edit: disable by default
-        'url'             => 'https://logmachine.bufferpunk.com', // default 
-        'default_format'  => true, // you can change this to false
-        'room'            => null,    // can edit: I preffer you just add a name
+        'url'             => 'https://logmachine.org', // default
+		'default_format' => true, // you can change this to false
+
+        /** HTTP transport **/
+        'http_enabled' => false, // set to true to send logs via HTTP POST
+
+        /** WebSocket / Socket.IO transport **/
+        'websocket_enabled' => false, // set to true to stream logs over Socket.IO
+        'socketio_path' => 'api/socket.io', // Socket.IO server path (default)
+
+        'room'            => null,    // can edit: You can add your room name here.
         //'user' => 'Test-user', // can edit: change to your user name (optional but a plus)
         //'module' => 'logmachine-php', // can edit: your module (optional but a plus)
-        'headers'         => [
-            // 'Authorization' => 'Bearer YOUR_TOKEN_HERE',
-        ],
+		/**
+			don't add your api key here; instead, add it to a .env file with the name
+			lm_auth_token, or if you do, add this file to a .gitignore file.
+		**/
+		'auth' => 'your-optional-token',
+        'headers' => [], // extra headers for the WebSocket handshake / HTTP requests
         'timeout'         => 30,
         'connect_timeout' => 10,
         'verify_ssl'      => true,
