@@ -16,7 +16,7 @@ class LogMachine
 {
     public static function create(array $config = []): ColorLogger
     {
-        self::loadCredentials();
+        self::loadEnv();
         $logger = new ColorLogger($config['channel'] ?? 'logmachine');
 
         // === Terminal (colored) formatter
@@ -136,18 +136,23 @@ class LogMachine
         }
 
         // === Context enrichment
-        $logger->pushProcessor([self::class, 'enrichContext']);
+        $logger->pushProcessor(function (LogRecord $record) use ($config) {
+            return self::enrichContext($record, $config);
+        });
 
         return $logger;
     }
 
-    public static function enrichContext(LogRecord $record): LogRecord
+    public static function enrichContext(LogRecord $record, array $config = []): LogRecord
     {
+        $user   = $config['central']['user'] ?? $config['user'] ?? get_current_user();
+        $module = $config['central']['module'] ?? $config['module'] ?? basename(getcwd());
+
         $record = $record->with(
             context: $record->context,
             extra: array_merge($record->extra, [
-                'user'   => getenv('CL_USERNAME') ?: getenv('lm_username') ?: get_current_user(),
-                'module' => basename(getcwd())
+                'user'   => $user,
+                'module' => $module
             ])
         );
 
@@ -174,7 +179,7 @@ class LogMachine
             formatted: null
         );
 
-        $enriched = self::enrichContext($record);
+        $enriched = self::enrichContext($record, $config);
 
         return [
             $user   ?? $enriched->extra['user'],
@@ -224,33 +229,48 @@ class LogMachine
         ];
     }
 
-    private static function loadCredentials(): void
+    private static function loadEnv(): void
     {
-        if (getenv('LM_LOADED') === 'true') {
+        if (getenv('LM_ENV_LOADED') === 'true') {
             return;
         }
         try {
-            $home = getenv('HOME') ?: (getenv('HOMEDRIVE') && getenv('HOMEPATH') ? getenv('HOMEDRIVE') . getenv('HOMEPATH') : null);
-            $credsPath = $home ? rtrim($home, '/\\') . '/.logmachine' : null;
-            if ($credsPath && file_exists($credsPath)) {
-                $content = file_get_contents($credsPath);
-                if ($content !== false) {
-                    $lines = explode("\n", trim($content));
-                    foreach ($lines as $line) {
-                        if (strpos($line, '=') !== false) {
-                            list($key, $value) = explode('=', $line, 2);
-                            $key = trim($key);
-                            $value = trim($value);
-                            putenv("{$key}={$value}");
-                            $_ENV[$key] = $value;
-                            $_SERVER[$key] = $value;
+            $paths = [
+                getcwd() . '/.env',
+                dirname(__DIR__, 2) . '/.env',
+                dirname(__DIR__, 4) . '/.env'
+            ];
+            foreach ($paths as $path) {
+                if ($path && file_exists($path)) {
+                    $content = file_get_contents($path);
+                    if ($content !== false) {
+                        $lines = explode("\n", trim($content));
+                        foreach ($lines as $line) {
+                            $line = trim($line);
+                            if (empty($line) || strpos($line, '#') === 0) {
+                                continue;
+                            }
+                            if (strpos($line, '=') !== false) {
+                                list($key, $value) = explode('=', $line, 2);
+                                $key = trim($key);
+                                $value = trim($value);
+                                if (preg_match('/^([\'"])(.*)\1$/', $value, $matches)) {
+                                    $value = $matches[2];
+                                }
+                                if (getenv($key) === false) {
+                                    putenv("{$key}={$value}");
+                                }
+                                $_ENV[$key] = $value;
+                                $_SERVER[$key] = $value;
+                            }
                         }
                     }
+                    break;
                 }
             }
-            putenv('LM_LOADED=true');
+            putenv('LM_ENV_LOADED=true');
         } catch (\Throwable $e) {
-            putenv('LM_LOADED=false');
+            putenv('LM_ENV_LOADED=false');
         }
     }
 }

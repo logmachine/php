@@ -35,7 +35,7 @@ return [
         /** Uncomment the following if you need to use them my King **/
         //'user' => 'Test-user', // change this to your user name (optional but a plus)
         //'module' => 'logmachine-php', // your module or what yo working on (optional but a plus)
-        'auth' => 'your-optional-token', // never mind about em :D
+        'auth' => 'your-optional-token',
         'headers' => [], // extra headers for the WebSocket handshake / HTTP requests
     ],
 

@@ -69,7 +69,7 @@ class WebSocketTransport extends AbstractProcessingHandler
                 throw new \InvalidArgumentException("WebSocket transport requires 'central.room'.");
             }
 
-            $token = getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+            $token = getenv('LM_AUTH_TOKEN') ?: getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
             $options = [
                 'path'    => $this->config['socketio_path'],
                 'headers' => $this->config['headers'],
@@ -102,7 +102,7 @@ class WebSocketTransport extends AbstractProcessingHandler
                 throw new \RuntimeException('Log parser must return an array.');
             }
 
-            $token = getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+            $token = getenv('LM_AUTH_TOKEN') ?: getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
 
             $this->client->emit('log', [
                 'room'       => $this->config['room'],

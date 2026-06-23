@@ -7,3 +7,4 @@ node_modules
 rust/target
 /vendor/
 */vendor*
+*test/

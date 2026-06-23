@@ -148,12 +148,27 @@ class HttpTransport extends AbstractProcessingHandler
             $this->config['headers']
         );
 
-        $enriched = array_merge($logData, [
+        $token = getenv('LM_AUTH_TOKEN') ?: getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+        if ($token !== null && $token !== '') {
+            $hasAuth = false;
+            foreach ($headers as $key => $value) {
+                if (strtolower($key) === 'authorization') {
+                    $hasAuth = true;
+                    break;
+                }
+            }
+            if (!$hasAuth) {
+                $headers['Authorization'] = 'Bearer ' . $token;
+            }
+        }
+
+        $enriched = [
+            'user'      => $logData['user'] ?? '',
+            'module'    => $logData['module'] ?? '',
+            'level'     => $record->level->getName(),
             'timestamp' => $record->datetime->format(\DateTimeInterface::RFC3339_EXTENDED),
-            'level' => $record->level->getName(),
-            'channel' => $record->channel,
-            'transport_version' => '1.0',
-        ]);
+            'message'   => $logData['message'] ?? $record->message,
+        ];
 
         $this->client->post($url, [
             'headers' => $headers,
