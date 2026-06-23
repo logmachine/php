@@ -69,12 +69,19 @@ class WebSocketTransport extends AbstractProcessingHandler
                 throw new \InvalidArgumentException("WebSocket transport requires 'central.room'.");
             }
 
-            $this->client = ElephantClient::create($this->config['url'], [
+            $token = getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+            $options = [
                 'path'    => $this->config['socketio_path'],
                 'headers' => $this->config['headers'],
-            ]);
+            ];
+            if ($token !== null && $token !== '') {
+                $options['auth'] = ['token' => $token];
+            }
+
+            $this->client = ElephantClient::create($this->config['url'], $options);
 
             $this->client->connect();
+            $this->client->emit('join', ['room' => $this->config['room']]);
             $this->connected = true;
         } catch (\Throwable $e) {
             $this->connected = false;
@@ -95,9 +102,12 @@ class WebSocketTransport extends AbstractProcessingHandler
                 throw new \RuntimeException('Log parser must return an array.');
             }
 
+            $token = getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+
             $this->client->emit('log', [
-                'room' => $this->config['room'],
-                'data' => $logData,
+                'room'       => $this->config['room'],
+                'data'       => $logData,
+                'auth_token' => $token,
             ]);
         } catch (\Throwable $e) {
             $this->connected = false;

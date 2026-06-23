@@ -14,7 +14,7 @@ return [
 
     'central' => [
         /** The URL is the Law **/
-        'url' => 'https://logmachine.bufferpunk.com', /** DONT EVEN THINK OF TOUCHING ME :P **/
+        'url' => 'https://logmachine.org', /** DONT EVEN THINK OF TOUCHING ME :P **/
         /** The following is the default format for all logmachine 
          *  If you want a diferent format for your logs, you can set it to false.
         **/

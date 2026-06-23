@@ -16,6 +16,7 @@ class LogMachine
 {
     public static function create(array $config = []): ColorLogger
     {
+        self::loadCredentials();
         $logger = new ColorLogger($config['channel'] ?? 'logmachine');
 
         // === Terminal (colored) formatter
@@ -116,11 +117,16 @@ class LogMachine
         // === WebSocket Transport
         if (!empty($config['central']['websocket_enabled']) && $config['central']['websocket_enabled'] === true) {
 
+            $centralCfg = $config['central'];
             [$user, $module] = self::resolveUserAndModule($config);
+
+            if (empty($centralCfg['room'])) {
+                $centralCfg['room'] = strtolower($user . '_' . $module);
+            }
 
             $wsTransport = new WebSocketTransport(
                 fn(string $logText) => self::parseLog($logText, $user, $module),
-                $config['central'],
+                $centralCfg,
                 $config['level'] ?? ColorLogger::DEBUG,
                 true,
                 $fallbackLogger
@@ -140,7 +146,7 @@ class LogMachine
         $record = $record->with(
             context: $record->context,
             extra: array_merge($record->extra, [
-                'user'   => getenv('CL_USERNAME') ?: get_current_user(),
+                'user'   => getenv('CL_USERNAME') ?: getenv('lm_username') ?: get_current_user(),
                 'module' => basename(getcwd())
             ])
         );
@@ -216,5 +222,35 @@ class LogMachine
             "timestamp" => $timestamp,
             "message"   => trim($message)
         ];
+    }
+
+    private static function loadCredentials(): void
+    {
+        if (getenv('LM_LOADED') === 'true') {
+            return;
+        }
+        try {
+            $home = getenv('HOME') ?: (getenv('HOMEDRIVE') && getenv('HOMEPATH') ? getenv('HOMEDRIVE') . getenv('HOMEPATH') : null);
+            $credsPath = $home ? rtrim($home, '/\\') . '/.logmachine' : null;
+            if ($credsPath && file_exists($credsPath)) {
+                $content = file_get_contents($credsPath);
+                if ($content !== false) {
+                    $lines = explode("\n", trim($content));
+                    foreach ($lines as $line) {
+                        if (strpos($line, '=') !== false) {
+                            list($key, $value) = explode('=', $line, 2);
+                            $key = trim($key);
+                            $value = trim($value);
+                            putenv("{$key}={$value}");
+                            $_ENV[$key] = $value;
+                            $_SERVER[$key] = $value;
+                        }
+                    }
+                }
+            }
+            putenv('LM_LOADED=true');
+        } catch (\Throwable $e) {
+            putenv('LM_LOADED=false');
+        }
     }
 }
