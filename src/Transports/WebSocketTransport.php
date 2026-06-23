@@ -49,7 +49,7 @@ class WebSocketTransport extends AbstractProcessingHandler
     private function normalizeConfig(array $central): array
     {
         return array_merge([
-            'socketio_path' => '/api/socket.io/',
+            'socketio_path' => 'api/socket.io',
             'headers'       => [],
             'room'          => 'default-room',
         ], $central);
@@ -69,12 +69,19 @@ class WebSocketTransport extends AbstractProcessingHandler
                 throw new \InvalidArgumentException("WebSocket transport requires 'central.room'.");
             }
 
-            $this->client = ElephantClient::create($this->config['url'], [
-                'path'    => $this->config['socketio_path'],
-                'headers' => $this->config['headers'],
-            ]);
+            $token = getenv('LM_AUTH_TOKEN') ?: getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+            $options = [
+                'sio_path' => $this->config['socketio_path'],
+                'headers'  => $this->config['headers'],
+            ];
+            if ($token !== null && $token !== '') {
+                $options['auth'] = ['token' => $token];
+            }
+
+            $this->client = ElephantClient::create($this->config['url'], $options);
 
             $this->client->connect();
+            $this->client->emit('join', ['room' => $this->config['room']]);
             $this->connected = true;
         } catch (\Throwable $e) {
             $this->connected = false;
@@ -89,15 +96,26 @@ class WebSocketTransport extends AbstractProcessingHandler
         }
 
         try {
-            $logData = ($this->logParser)($record->formatted ?? $record->message);
-
-            if (!is_array($logData)) {
-                throw new \RuntimeException('Log parser must return an array.');
+            $levelName = $record->level->getName();
+            $isSuccess = !empty($record->context['_success']);
+            if ($isSuccess && $levelName === 'INFO') {
+                $levelName = 'SUCCESS';
             }
 
+            $logData = [
+                'user'      => $record->extra['user'] ?? getenv('lm_username') ?? 'unknown',
+                'module'    => $record->extra['module'] ?? 'app',
+                'level'     => $levelName,
+                'timestamp' => $record->datetime->format(\DateTimeInterface::RFC3339),
+                'message'   => $record->message,
+            ];
+
+            $token = getenv('LM_AUTH_TOKEN') ?: getenv('lm_auth_token') ?: ($this->config['auth'] ?? null);
+
             $this->client->emit('log', [
-                'room' => $this->config['room'],
-                'data' => $logData,
+                'room'       => $this->config['room'],
+                'data'       => $logData,
+                'auth_token' => $token,
             ]);
         } catch (\Throwable $e) {
             $this->connected = false;

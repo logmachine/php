@@ -16,6 +16,7 @@ class LogMachine
 {
     public static function create(array $config = []): ColorLogger
     {
+        self::loadEnv();
         $logger = new ColorLogger($config['channel'] ?? 'logmachine');
 
         // === Terminal (colored) formatter
@@ -116,11 +117,16 @@ class LogMachine
         // === WebSocket Transport
         if (!empty($config['central']['websocket_enabled']) && $config['central']['websocket_enabled'] === true) {
 
+            $centralCfg = $config['central'];
             [$user, $module] = self::resolveUserAndModule($config);
+
+            if (empty($centralCfg['room'])) {
+                $centralCfg['room'] = strtolower($user . '_' . $module);
+            }
 
             $wsTransport = new WebSocketTransport(
                 fn(string $logText) => self::parseLog($logText, $user, $module),
-                $config['central'],
+                $centralCfg,
                 $config['level'] ?? ColorLogger::DEBUG,
                 true,
                 $fallbackLogger
@@ -130,18 +136,23 @@ class LogMachine
         }
 
         // === Context enrichment
-        $logger->pushProcessor([self::class, 'enrichContext']);
+        $logger->pushProcessor(function (LogRecord $record) use ($config) {
+            return self::enrichContext($record, $config);
+        });
 
         return $logger;
     }
 
-    public static function enrichContext(LogRecord $record): LogRecord
+    public static function enrichContext(LogRecord $record, array $config = []): LogRecord
     {
+        $user   = $config['central']['user'] ?? $config['user'] ?? get_current_user();
+        $module = $config['central']['module'] ?? $config['module'] ?? basename(getcwd());
+
         $record = $record->with(
             context: $record->context,
             extra: array_merge($record->extra, [
-                'user'   => getenv('CL_USERNAME') ?: get_current_user(),
-                'module' => basename(getcwd())
+                'user'   => $user,
+                'module' => $module
             ])
         );
 
@@ -168,7 +179,7 @@ class LogMachine
             formatted: null
         );
 
-        $enriched = self::enrichContext($record);
+        $enriched = self::enrichContext($record, $config);
 
         return [
             $user   ?? $enriched->extra['user'],
@@ -216,5 +227,50 @@ class LogMachine
             "timestamp" => $timestamp,
             "message"   => trim($message)
         ];
+    }
+
+    private static function loadEnv(): void
+    {
+        if (getenv('LM_ENV_LOADED') === 'true') {
+            return;
+        }
+        try {
+            $paths = [
+                getcwd() . '/.env',
+                dirname(__DIR__, 2) . '/.env',
+                dirname(__DIR__, 4) . '/.env'
+            ];
+            foreach ($paths as $path) {
+                if ($path && file_exists($path)) {
+                    $content = file_get_contents($path);
+                    if ($content !== false) {
+                        $lines = explode("\n", trim($content));
+                        foreach ($lines as $line) {
+                            $line = trim($line);
+                            if (empty($line) || strpos($line, '#') === 0) {
+                                continue;
+                            }
+                            if (strpos($line, '=') !== false) {
+                                list($key, $value) = explode('=', $line, 2);
+                                $key = trim($key);
+                                $value = trim($value);
+                                if (preg_match('/^([\'"])(.*)\1$/', $value, $matches)) {
+                                    $value = $matches[2];
+                                }
+                                if (getenv($key) === false) {
+                                    putenv("{$key}={$value}");
+                                }
+                                $_ENV[$key] = $value;
+                                $_SERVER[$key] = $value;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            putenv('LM_ENV_LOADED=true');
+        } catch (\Throwable $e) {
+            putenv('LM_ENV_LOADED=false');
+        }
     }
 }
