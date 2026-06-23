@@ -25,7 +25,7 @@ return [
 
         /** WebSocket / Socket.IO transport **/
         'websocket_enabled' => false, // set to true to stream logs over Socket.IO
-        'socketio_path' => '/api/socket.io/', // Socket.IO server path (default)
+        'socketio_path' => 'api/socket.io', // Socket.IO server path (default)
 
         /* The following will be your room id
          * you can change it to what you wish
